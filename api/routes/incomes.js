@@ -8,8 +8,14 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/', (req, res, next) => {
+  const income = {
+    type: req.body.type,
+    value: req.body.value,
+    date: req.body.date
+  }
   res.status(201).json({
-    message: 'handling POST /incomes'
+    message: 'handling POST /incomes',
+    income: income
   });
 });
 

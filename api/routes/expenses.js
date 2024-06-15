@@ -8,8 +8,14 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/', (req, res, next) => {
+  const expense = {
+    type: req.body.type,
+    value: req.body.value,
+    date: req.body.date
+  }
   res.status(201).json({
-    message: 'handling POST /expenses'
+    message: 'handling POST /expenses',
+    expense: expense
   });
 });
 
