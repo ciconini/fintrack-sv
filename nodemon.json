@@ -1,0 +1,8 @@
+{
+  "env": {
+    "MONGO_ATLAS_PW": "PgZjGqH8uFgf7VLi"
+  },
+  "db": {
+    "mongoURI": "mongodb+srv://fintrack:PgZjGqH8uFgf7VLi@fintrack.bdqgqr3.mongodb.net/?retryWrites=true&w=majority&appName=fintrack"
+  }
+}
