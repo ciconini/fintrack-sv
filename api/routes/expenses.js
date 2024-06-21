@@ -3,17 +3,29 @@ const router = express.Router();
 const mongoose = require('mongoose');
 
 const Expense = require('../models/expense');
+const FilterOptions = require('../models/filter-options');
+
+const expenseFields = '_id name value type date';
 
 router.get('/', (req, res, next) => {
   Expense.find()
+    .select(expenseFields)
     .exec()
     .then(docs => {
+      const response = {
+        count: docs.length,
+        status: 200,
+        success: true,
+        expenses: docs
+      }
       console.log(docs);
-      res.status(200).json(docs)
+      res.status(200).json(response)
     })
     .catch(err => {
       console.log(err)
       res.status(500).json({
+        status: 500,
+        success: false,
         error: err
       })
     })
@@ -40,6 +52,68 @@ router.post('/', (req, res, next) => {
       })
     });
 });
+
+router.post('/filter', (req, res, next) => {
+  const filterOptions = new FilterOptions({...req.body});
+  let query = {
+    date: {
+      $gte: filterOptions.dateStart,
+      $lt: filterOptions.dateEnd
+    }
+  }
+  if (filterOptions.type) {
+    query.type = filterOptions.type
+  }
+  Expense.find(query)
+    .select(expenseFields)
+    .sort({ date: filterOptions.order === 'ASC' ? 1 : -1 })
+    .limit(filterOptions.limit)
+    .setOptions({
+      skip: filterOptions.page > 1 ? (filterOptions.page - 1) * filterOptions.limit : 0
+    })
+    .exec()
+    .then(docs => {
+      const response = {
+        count: docs.length,
+        status: 200,
+        success: true,
+        expenses: docs,
+        query: query
+      }
+      console.log(docs);
+      res.status(200).json(response)
+    })
+    .catch(err => {
+      console.log(err)
+      res.status(500).json({
+        status: 500,
+        success: false,
+        error: err
+      })
+    })
+  return
+  Expense.find(expenseFields)
+    .select()
+    .exec()
+    .then(docs => {
+      const response = {
+        count: docs.length,
+        status: 200,
+        success: true,
+        expenses: docs
+      }
+      console.log(docs);
+      res.status(200).json(response)
+    })
+    .catch(err => {
+      console.log(err)
+      res.status(500).json({
+        status: 500,
+        success: false,
+        error: err
+      })
+    })
+})
 
 router.get('/:expenseId', (req, res, next) => {
   const id = req.params.expenseId;
