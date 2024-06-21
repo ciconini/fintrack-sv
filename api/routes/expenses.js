@@ -61,18 +61,13 @@ router.get('/:expenseId', (req, res, next) => {
 
 router.patch('/:expenseId', (req, res, next) => {
   const id = req.params.expenseId;
-  const updateOpts = {};
-  for(const options of req.body) {
-    updateOpts[options.propName] = options.value;
-  }
-  Expense.findOneAndUpdate({ _id: id }, { $set: updateOpts })
+  Expense.findOneAndUpdate({ _id: id }, { $set: req.body }, {new: true})
     .exec()
     .then(result => {
-      console.log(result);
       res.status(200).json(result)
     })
     .catch(err => {
-      console.log(err);
+      console.error(err);
       res.status(500).json({
         error: err
       })
