@@ -91,28 +91,6 @@ router.post('/filter', (req, res, next) => {
         error: err
       })
     })
-  return
-  Expense.find(expenseFields)
-    .select()
-    .exec()
-    .then(docs => {
-      const response = {
-        count: docs.length,
-        status: 200,
-        success: true,
-        expenses: docs
-      }
-      console.log(docs);
-      res.status(200).json(response)
-    })
-    .catch(err => {
-      console.log(err)
-      res.status(500).json({
-        status: 500,
-        success: false,
-        error: err
-      })
-    })
 })
 
 router.get('/:expenseId', (req, res, next) => {
@@ -159,5 +137,30 @@ router.delete('/:expenseId', (req, res, next) => {
       res.status(500).json({error: err})
     })
 });
+
+router.post('/value', (req, res, next) => {
+  const filterOptions = new FilterOptions({...req.body});
+  let query = {
+    date: {
+      $gte: filterOptions.dateStart,
+      $lt: filterOptions.dateEnd
+    }
+  }
+  if (filterOptions.type) {
+    query.type = filterOptions.type
+  }
+  Expense.aggregate([
+    { $match: query },
+    { $group: {_id: null, value: {$sum: '$value'}}}
+  ]).then(result => {
+    res.status(200).json(result[0].value)
+  }).catch(error => {
+    res.status(500).json({
+      status: 500,
+      success: false,
+      error: err
+    })
+  })
+})
 
 module.exports = router;
