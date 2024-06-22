@@ -53,7 +53,7 @@ router.post('/', (req, res, next) => {
     });
 });
 
-router.post('/filter', (req, res, next) => {
+router.post('/filter', async (req, res, next) => {
   const filterOptions = new FilterOptions({...req.body});
   let query = {
     date: {
@@ -64,24 +64,28 @@ router.post('/filter', (req, res, next) => {
   if (filterOptions.type) {
     query.type = filterOptions.type
   }
+  const page = filterOptions.page || 0;
+  const limit = filterOptions.limit || 10;
   Expense.find(query)
     .select(expenseFields)
     .sort({ date: filterOptions.order === 'ASC' ? 1 : -1 })
     .limit(filterOptions.limit)
-    .setOptions({
-      skip: filterOptions.page > 1 ? (filterOptions.page - 1) * filterOptions.limit : 0
-    })
+    .skip(page * limit)
     .exec()
     .then(docs => {
-      const response = {
-        count: docs.length,
-        status: 200,
-        success: true,
-        expenses: docs,
-        query: query
-      }
-      console.log(docs);
-      res.status(200).json(response)
+      Expense.countDocuments(query)
+        .exec()
+        .then(count => {
+          const response = {
+            totalCount: count,
+            status: 200,
+            success: true,
+            expenses: docs,
+            query: query
+          }
+          console.log(docs);
+          res.status(200).json(response)
+        })
     })
     .catch(err => {
       console.log(err)
