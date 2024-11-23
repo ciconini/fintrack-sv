@@ -73,7 +73,7 @@ router.post('/filter', async (req, res, next) => {
     .skip(page * limit)
     .exec()
     .then(docs => {
-      Expense.countDocuments(query)
+      return Expense.countDocuments(query)
         .exec()
         .then(count => {
           const response = {
@@ -157,8 +157,8 @@ router.post('/value', (req, res, next) => {
     { $match: query },
     { $group: {_id: null, value: {$sum: '$value'}}}
   ]).then(result => {
-    res.status(200).json(result[0].value)
-  }).catch(error => {
+    res.status(200).json(result[0]?.value)
+  }).catch(err => {
     res.status(500).json({
       status: 500,
       success: false,
